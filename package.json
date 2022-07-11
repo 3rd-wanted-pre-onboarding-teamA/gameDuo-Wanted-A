@@ -1,0 +1,30 @@
+{
+  "name": "gameduo-wanted-a",
+  "version": "1.0.0",
+  "description": "Redis로 랭킹 서비스를 구현한 보스레이드 PVE 컨텐츠 서비스 🎮",
+  "main": "app.js",
+  "type": "commonjs",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon app"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/3rd-wanted-pre-onboarding-teamA/gameDuo-Wanted-A.git"
+  },
+  "author": "A team",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/3rd-wanted-pre-onboarding-teamA/gameDuo-Wanted-A/issues"
+  },
+  "homepage": "https://github.com/3rd-wanted-pre-onboarding-teamA/gameDuo-Wanted-A#readme",
+  "dependencies": {
+    "axios": "^0.27.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.1",
+    "express": "^4.18.1",
+    "http-errors": "^2.0.0",
+    "morgan": "^1.10.0",
+    "redis": "^4.2.0"
+  }
+}
