@@ -1,10 +1,10 @@
 const redis = require("redis");
-const redisPool = require("../db/redisConfig");
 
 class BossRaidService {
   static bossRaidStatus = async function () {
     const client = redis.createClient({
-      redisPool, 
+      // TODO: 추후 redis URL 경로 지정하기 
+      // url: ,
       legacyMode: true
     });
     client.on("connect", () => {
