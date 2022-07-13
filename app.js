@@ -13,7 +13,9 @@ app.use(express.json());
 app.use(cors(corsOption));
 app.use(morgan("tiny"));
 
-app.use("/", router);
+app.use("/", router, (req, res, next) => {
+  res.send("Hello from API server");
+});
 
 app.use((req, res, next) => {
   res.sendStatus(404);
@@ -24,11 +26,9 @@ app.use((err, req, res, next) => {
   res.sendStatus(500);
 });
 
-console.log("Server start!!!");
-
-app.get("/", (req, res, next) => {
-  res.send("Hello from API Server");
-});
+// app.get("/", (req, res, next) => {
+//   res.send("Hello from API Server");
+// });
 
 const PORT = config.port || 3000;
 

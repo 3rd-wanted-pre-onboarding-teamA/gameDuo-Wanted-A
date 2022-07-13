@@ -10,7 +10,7 @@ const pool = mysql.createPool({
   database: process.env.MYSQL_DATABASE,
   connectionLimit: 500,
   waitForConnections: true,
-  dateStrings: "date"
+  dateStrings: "date",
 });
 
 module.exports = pool;
