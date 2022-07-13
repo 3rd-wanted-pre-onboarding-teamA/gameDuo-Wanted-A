@@ -6,7 +6,6 @@ const router = require("./router/index.js");
 const app = express();
 
 const corsOption = {
-  origin: config.cors.allowedOrigin,
   optionsSuccessStatus: 200,
 };
 
