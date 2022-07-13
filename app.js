@@ -3,25 +3,11 @@ const morgan = require("morgan");
 const express = require("express");
 const cors = require("cors");
 const router = require("./router/index.js");
-const redis = require("redis");
-
-// Redis 연동 부분
-async function run() {
-  const client = redis.createClient();
-
-  await client.connect();
-  console.log("Redis Server Opened??:", client.isOpen);
-
-  await client.disconnect();
-}
-run();
+const app = express();
 
 const corsOption = {
-  origin: config.cors.allowedOrigin,
   optionsSuccessStatus: 200,
 };
-
-const app = express();
 
 app.use(express.json());
 app.use(cors(corsOption));
