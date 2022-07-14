@@ -39,7 +39,7 @@ class BossRaidService {
     }
   }
 
-  static async putRaidRecordId(raidRecordId) {
+  static async putRaidRecordId(raidRecordId, bossRaidLimitSeconds) {
     /**
      * 기능: 게임 시작 가능시 raidStatus에 raidRecordId 넣기
      * 작성자: 이승연
@@ -48,6 +48,7 @@ class BossRaidService {
     try {
         await client.connect();
         await client.set("raidStatus", raidRecordId);
+        await client.expire("raidStatus", bossRaidLimitSeconds);  // 레이드 제한시간 지나면 raidStatus 삭제
     } catch {
         throw err;
     } finally {

@@ -1,5 +1,6 @@
 const BossRaidService = require("../services/bossRaid.service");
 const RankingInfo = require("../models/rankingInfo.model");
+const getStaticData = require("../utils/getStaticData");
 require("date-utils");
 
 class BossRaidController {
@@ -40,7 +41,8 @@ class BossRaidController {
         const { userId, level } = req.body;
         const [data] = await BossRaidService.createId(userId, level); // raidRecordId 생성
         const raidRecordId = data.insertId;
-        await BossRaidService.putRaidRecordId(raidRecordId);
+        const bossRaidLimitSeconds = (await getStaticData()).bossRaidLimitSeconds;  // 보스레이드 제한시간
+        await BossRaidService.putRaidRecordId(raidRecordId, bossRaidLimitSeconds);
         isEntered = true;
         return res.status(201).json({
           message: "BossRaid Start!!",
@@ -66,19 +68,8 @@ class BossRaidController {
     const [data] = await BossRaidService.findLevel(raidRecordId);
     const { user_id, boss_raid_level, enter_time, end_time } = data[0];
     try { // 게임 레벨 별 점수 관련 static data 💽 Redis에 캐싱하여 사용하기
-      let value = await BossRaidService.levelCahceToRedis();
-      let bossRaidLimitSeconds, levels;
-      if (value) {
-        bossRaidLimitSeconds = JSON.parse(value).bossRaids[0].bossRaidLimitSeconds;
-        levels = JSON.parse(value).bossRaids[0].levels;
-        console.log("from cached data");
-      } else {
-        const { data } = await axios.get("https://dmpilf5svl7rv.cloudfront.net/assignment/backend/bossRaidData.json");
-        await BossRaidService.putStaticData(JSON.stringify(data));
-        console.log("from source data");
-        bossRaidLimitSeconds = data.bossRaids[0].bossRaidLimitSeconds;
-        levels = data.bossRaids[0].levels;
-      }
+      const bossRaidLimitSeconds = (await getStaticData()).bossRaidLimitSeconds;
+      const levels = (await getStaticData()).levels;
 
       levels.forEach((info) => { // 방금 게임을 끝낸 raidRecordId가 진행한 게임 레벨을 찾아서 해당 레벨의 점수를 해당 user_id의 score에 합산
         if (boss_raid_level === info.level) {
