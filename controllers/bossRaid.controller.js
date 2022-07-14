@@ -1,17 +1,18 @@
 const BossRaidService = require("../services/bossRaid.service");
 const RankingInfo = require("../models/rankingInfo.model");
-require("date-utils")
+const { setTopRankerToCache } = require("../services/bossRaid.service");
+require("date-utils");
 
 class BossRaidController {
   static bossRaidStatus = async function (req, res) {
     try {
       let raidStatus = await BossRaidService.bossRaidStatus();
       if (!raidStatus) {
-        return res.status(200).json({canEnter: 0});
+        return res.status(200).json({ canEnter: 0 });
       } else {
         return res.status(200).json({
           canEnter: 1,
-          enteredUserId: raidStatus
+          enteredUserId: raidStatus,
         });
       }
     } catch (err) {
@@ -45,7 +46,7 @@ class BossRaidController {
         isEntered = true;
       }
     } catch (err) {
-      console.error(err)
+      console.error(err);
       throw err;
     }
 
@@ -77,15 +78,26 @@ class BossRaidController {
         levels = JSON.parse(value).bossRaids[0].levels;
         console.log("from cached data");
       } else {
-        const {data} = await axios.get("https://dmpilf5svl7rv.cloudfront.net/assignment/backend/bossRaidData.json");
+        const { data } = await axios.get("https://dmpilf5svl7rv.cloudfront.net/assignment/backend/bossRaidData.json");
         await BossRaidService.putStaticData(JSON.stringify(data));
         console.log("from source data");
         bossRaidLimitSeconds = data.bossRaids[0].bossRaidLimitSeconds;
         levels = data.bossRaids[0].levels;
       }
 
+      /*
+       * 방금 게임을 끝낸 raidRecordId가 진행한 게임 레벨을 찾아서
+       * 해당 레벨의 점수를 해당 user_id의 score에 합산하자.
+       */
+      levels.forEach((info) => {
+        if (boss_raid_level === info.level) {
+          singleScore = info.score;
+          score = score + singleScore;
+        }
+      });
+
       /** 📍 유효성 검사 - 예외 처리
-       * 1. 
+       * 1.
        * 2. 레이드 제한시간 out
        */
       // 1.
@@ -95,7 +107,7 @@ class BossRaidController {
         });
       }
       // 2.
-      let endTime = new Date();  
+      let endTime = new Date();
       let endTimeFormat = endTime.toFormat("YYYY-MM-DD HH:MI:SS");
 
       if ((endTime.getTime() - new Date(enter_time).getTime()) / 1000 > bossRaidLimitSeconds) {
@@ -110,19 +122,14 @@ class BossRaidController {
       // 게임 종료후 end_time 입력
       await BossRaidService.putEndTime(raidRecordId, endTimeFormat);
 
-      // redisStatus 삭제
+      // 유저테이블 총점 업데이트
+      await BossRaidService.updateTotalScore(userId, score);
+
+      // raidStatus 삭제
       await BossRaidService.delRedisStatus();
 
-      /*
-       * 방금 게임을 끝낸 raidRecordId가 진행한 게임 레벨을 찾아서
-       * 해당 레벨의 점수를 해당 user_id의 score에 합산하자.
-       */
-      levels.forEach((info) => {
-        if (boss_raid_level === info.level) {
-          singleScore = info.score;
-          score = score + singleScore;
-        }
-      });
+      // 랭킹 업데이트
+      await BossRaidController.topRankerToCache();
     } catch (err) {
       throw err;
     }
@@ -145,7 +152,7 @@ class BossRaidController {
       - top10 랭킹은 redis에서 조회
       - 내 랭킹은 mysql에서 조회
     */
-    const { userId }  = req.body;
+    const { userId } = req.body;
     let rankingInfoData = [];
     let rankingInfoJsonArr = [];
 
@@ -158,11 +165,11 @@ class BossRaidController {
       const [myRankingInfoData] = await BossRaidService.myRankingInfo(userId);
       res.status(200).json({
         topRankerInfoList: rankingInfoData,
-        myRankingInfo: myRankingInfoData[0] 
+        myRankingInfo: myRankingInfoData[0],
       });
     } catch (err) {
       throw err;
-    } 
+    }
   };
 
   static topRankerToCache = async function (req, res) {
