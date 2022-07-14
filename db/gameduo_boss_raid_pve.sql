@@ -1,13 +1,13 @@
 create database gameduo_boss_raid_pve;
 use gameduo_boss_raid_pve;
 create table user ( -- 유저
-  user_id varchar(50) not null,
-  score int,
+  user_id int not null auto_increment,
+  score int default 0,
   primary key(user_id)
 );
 create table boss_raid ( -- 보스레이드
   raid_record_id int not null auto_increment,
-  user_id varchar(50) not null,
+  user_id int not null,
   enter_time datetime default now(), 
   end_time datetime, 
   boss_raid_level int not null,
