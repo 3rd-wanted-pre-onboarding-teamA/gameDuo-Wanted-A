@@ -1,5 +1,6 @@
 const BossRaidService = require("../services/bossRaid.service");
 const RankingInfo = require("../models/rankingInfo.model");
+const { setTopRankerToCache } = require('../services/bossRaid.service');
 require("date-utils")
 
 class BossRaidController {
@@ -55,6 +56,21 @@ class BossRaidController {
       raidRecordId,
     });
   }
+  static topRankerToCache = async function (req, res) {
+    /*
+      mysql에서 받아온 TopRanker를 캐시에 설정
+      1. 서버 시작시 동작
+      2. 게임 끝날 때 동작
+    */
+    let rankingInfoData = [];
+    try {
+      rankingInfoData = await BossRaidService.topRankerInfoListSelect();
+      await BossRaidService.setTopRankerToCache(rankingInfoData[0]);
+      console.log("랭킹이 재설정되었습니다.");
+    } catch (err) {
+      throw err;
+    }
+  };
 
   // 보스레이드 게임 종료
   static async stopBossRaid(req, res) {
@@ -84,6 +100,17 @@ class BossRaidController {
         levels = data.bossRaids[0].levels;
       }
 
+      /*
+       * 방금 게임을 끝낸 raidRecordId가 진행한 게임 레벨을 찾아서
+       * 해당 레벨의 점수를 해당 user_id의 score에 합산하자.
+       */
+      levels.forEach((info) => {
+        if (boss_raid_level === info.level) {
+          singleScore = info.score;
+          score = score + singleScore;
+        }
+      });
+
       /** 📍 유효성 검사 - 예외 처리
        * 1. 
        * 2. 레이드 제한시간 out
@@ -110,19 +137,15 @@ class BossRaidController {
       // 게임 종료후 end_time 입력
       await BossRaidService.putEndTime(raidRecordId, endTimeFormat);
 
-      // redisStatus 삭제
+      // 유저테이블 총점 업데이트
+      await BossRaidService.updateTotalScore(userId, score);
+
+      // raidStatus 삭제
       await BossRaidService.delRedisStatus();
 
-      /*
-       * 방금 게임을 끝낸 raidRecordId가 진행한 게임 레벨을 찾아서
-       * 해당 레벨의 점수를 해당 user_id의 score에 합산하자.
-       */
-      levels.forEach((info) => {
-        if (boss_raid_level === info.level) {
-          singleScore = info.score;
-          score = score + singleScore;
-        }
-      });
+      // 랭킹 업데이트
+      await BossRaidController.topRankerToCache();
+      
     } catch (err) {
       throw err;
     }
@@ -165,21 +188,7 @@ class BossRaidController {
     } 
   };
 
-  static topRankerToCache = async function (req, res) {
-    /*
-      mysql에서 받아온 TopRanker를 캐시에 설정
-      1. 서버 시작시 동작
-      2. 게임 끝날 때 동작
-    */
-    let rankingInfoData = [];
-    try {
-      rankingInfoData = await BossRaidService.topRankerInfoListSelect();
-      await BossRaidService.setTopRankerToCache(rankingInfoData[0]);
-      console.log("랭킹이 재설정되었습니다.");
-    } catch (err) {
-      throw err;
-    }
-  };
+  
 }
 
 module.exports = BossRaidController;

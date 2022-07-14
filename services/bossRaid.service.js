@@ -117,7 +117,7 @@ class BossRaidService {
 
   // 게임 끝난 후 점수 합산을 위한 총점 찾기 (user table)
   static async findTotalScore(userId) {
-    const sql = `SELECT score FROM user WHERE user_id=${userId}`;
+    const sql = `SELECT * FROM user WHERE user_id=${userId}`;
     let connection = null;
     try {
       connection = await mysqlPool.getConnection(async (conn) => conn);
@@ -145,9 +145,24 @@ class BossRaidService {
     }
   }
 
-  // fail 저장
+  // success 저장
   static async setSuccess(raidRecordId) {
     const sql = `UPDATE boss_raid SET success=true WHERE raid_record_id=${raidRecordId}`;
+    let connection = null;
+    try {
+      connection = await mysqlPool.getConnection(async (conn) => conn);
+      return await connection.query(sql);
+    } catch (err) {
+      console.error(err);
+      throw err;
+    } finally {
+      connection.release();
+    }
+  }
+
+  // 유저 테이블에 총점 업데이트하기
+  static async updateTotalScore(userId, score) {
+    const sql = `UPDATE user SET score=${score} WHERE user_id=${userId}`;
     let connection = null;
     try {
       connection = await mysqlPool.getConnection(async (conn) => conn);
