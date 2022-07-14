@@ -20,7 +20,7 @@ class BossRaidController {
         });
       }
     } catch (err) {
-      throw err;
+      res.status(500).json(response.INTERNAL_SERVER_ERROR);
     }
   };
 
@@ -47,8 +47,7 @@ class BossRaidController {
         isEntered = true;
       }
     } catch (err) {
-      console.error(err);
-      throw err;
+      res.status(500).json(response.INTERNAL_SERVER_ERROR);
     }
 
     return res.status(201).json({
@@ -123,7 +122,7 @@ class BossRaidController {
       // 랭킹 업데이트
       await BossRaidController.topRankerToCache();
     } catch (err) {
-      throw err;
+      res.status(500).json(response.INTERNAL_SERVER_ERROR);
     }
 
     res.status(200).json({
