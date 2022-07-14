@@ -1,6 +1,7 @@
 const redis = require("redis");
 const mysqlPool = require("../db/mysqlConfig");
 const redisPool = require("../db/redisConfig");
+const response = require("../utils/response");
 
 class BossRaidService {
   static async bossRaidStatus() {
@@ -14,7 +15,7 @@ class BossRaidService {
       const status = await client.get("raidStatus");
       return parseInt(status, 10);
     } catch (err) {
-      throw err;
+      res.status(500).json(response.INTERNAL_SERVER_ERROR);
     } finally {
       await client.disconnect();
     }
@@ -32,7 +33,7 @@ class BossRaidService {
       connection = await mysqlPool.getConnection(async (conn) => conn);
       return await connection.query(sql, values);
     } catch (err) {
-      console.error(err);
+      res.status(500).json(response.INTERNAL_SERVER_ERROR);
       throw err;
     } finally {
       connection.release();
@@ -46,12 +47,12 @@ class BossRaidService {
      */
     const client = redis.createClient(redisPool);
     try {
-        await client.connect();
-        await client.set("raidStatus", raidRecordId);
+      await client.connect();
+      await client.set("raidStatus", raidRecordId);
     } catch {
-        throw err;
+      res.status(500).json(response.INTERNAL_SERVER_ERROR);
     } finally {
-        await client.disconnect();
+      await client.disconnect();
     }
   }
 
@@ -62,13 +63,13 @@ class BossRaidService {
      */
     const client = redis.createClient(redisPool);
     try {
-        await client.connect();
-        let staticData = await client.get("bossRaidData");
-        return staticData;
+      await client.connect();
+      let staticData = await client.get("bossRaidData");
+      return staticData;
     } catch (err) {
-        throw err;
+      res.status(500).json(response.INTERNAL_SERVER_ERROR);
     } finally {
-        await client.disconnect();
+      await client.disconnect();
     }
   }
 
@@ -79,12 +80,12 @@ class BossRaidService {
      */
     const client = redis.createClient(redisPool);
     try {
-        await client.connect();
-        await client.set("bossRaidData", data);
+      await client.connect();
+      await client.set("bossRaidData", data);
     } catch (err) {
-        throw err;
+      res.status(500).json(response.INTERNAL_SERVER_ERROR);
     } finally {
-        await client.disconnect();
+      await client.disconnect();
     }
   }
 
@@ -95,12 +96,12 @@ class BossRaidService {
      */
     const client = redis.createClient(redisPool);
     try {
-        await client.connect();
-        await client.del("raidStatus");
+      await client.connect();
+      await client.del("raidStatus");
     } catch (err) {
-        throw err;
+      res.status(500).json(response.INTERNAL_SERVER_ERROR);
     } finally {
-        await client.disconnect();
+      await client.disconnect();
     }
   }
 
@@ -115,8 +116,7 @@ class BossRaidService {
       connection = await mysqlPool.getConnection(async (conn) => conn);
       return await connection.query(sql);
     } catch (err) {
-      console.error(err);
-      throw err;
+      res.status(500).json(response.INTERNAL_SERVER_ERROR);
     } finally {
       connection.release();
     }
@@ -133,8 +133,7 @@ class BossRaidService {
       connection = await mysqlPool.getConnection(async (conn) => conn);
       return await connection.query(sql);
     } catch (err) {
-      console.error(err);
-      throw err;
+      res.status(500).json(response.INTERNAL_SERVER_ERROR);
     } finally {
       connection.release();
     }
@@ -151,8 +150,7 @@ class BossRaidService {
       connection = await mysqlPool.getConnection(async (conn) => conn);
       return await connection.query(sql);
     } catch (err) {
-      console.error(err);
-      throw err;
+      res.status(500).json(response.INTERNAL_SERVER_ERROR);
     } finally {
       connection.release();
     }
@@ -169,8 +167,7 @@ class BossRaidService {
       connection = await mysqlPool.getConnection(async (conn) => conn);
       return await connection.query(sql);
     } catch (err) {
-      console.error(err);
-      throw err;
+      res.status(500).json(response.INTERNAL_SERVER_ERROR);
     } finally {
       connection.release();
     }
@@ -187,8 +184,7 @@ class BossRaidService {
       connection = await mysqlPool.getConnection(async (conn) => conn);
       return await connection.query(sql);
     } catch (err) {
-      console.error(err);
-      throw err;
+      res.status(500).json(response.INTERNAL_SERVER_ERROR);
     } finally {
       connection.release();
     }
@@ -203,13 +199,9 @@ class BossRaidService {
     try {
       client = redis.createClient(redisPool);
       await client.connect();
-      try {
-        return await client.get("topRankerInfoList");
-      } catch (err) {
-        throw err;
-      }
+      return await client.get("topRankerInfoList");
     } catch (err) {
-      throw err;
+      res.status(500).json(response.INTERNAL_SERVER_ERROR);
     } finally {
       await client.disconnect();
     }
@@ -226,7 +218,7 @@ class BossRaidService {
       connection = await mysqlPool.getConnection(async (conn) => conn);
       return await connection.query(sql);
     } catch (err) {
-      throw err;
+      res.status(500).json(response.INTERNAL_SERVER_ERROR);
     } finally {
       connection.release();
     }
@@ -243,7 +235,7 @@ class BossRaidService {
       connection = await mysqlPool.getConnection(async (conn) => conn);
       return await connection.query(sql);
     } catch (err) {
-      throw err;
+      res.status(500).json(response.INTERNAL_SERVER_ERROR);
     } finally {
       connection.release();
     }
@@ -258,13 +250,9 @@ class BossRaidService {
     try {
       client = redis.createClient(redisPool);
       await client.connect();
-      try {
-        await client.set("topRankerInfoList", JSON.stringify(rankingInfoData));
-      } catch (err) {
-        throw err;
-      }
+      await client.set("topRankerInfoList", JSON.stringify(rankingInfoData));
     } catch (err) {
-      throw err;
+      res.status(500).json(response.INTERNAL_SERVER_ERROR);
     } finally {
       await client.disconnect();
     }
