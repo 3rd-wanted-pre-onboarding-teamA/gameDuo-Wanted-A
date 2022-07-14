@@ -28,33 +28,30 @@ class BossRaidController {
      * 기능: 보스레이드 게임 시작
      * 작성자: 이승연
      */
-    const { userId, level } = req.body;
-    const [data] = await BossRaidService.createId(userId, level); // raidRecordId 생성
-    const raidRecordId = data.insertId;
     let isEntered = false;
-
     try { // Redis에서 raidStatus가 있으면 이미 사용중이므로 게임 시작이 불가능하고 반대의 경우 게임 시작이 가능하다
       let raidStatus = await BossRaidService.bossRaidStatus();
       if (raidStatus) { // 게임 시작 불가능
-        isEntered = true;
         return res.status(400).json({
           message: "이미 게임중인 사용자가 있습니다.",
           isEntered,
         });
       } else { // 게임 시작 가능
+        const { userId, level } = req.body;
+        const [data] = await BossRaidService.createId(userId, level); // raidRecordId 생성
+        const raidRecordId = data.insertId;
         await BossRaidService.putRaidRecordId(raidRecordId);
         isEntered = true;
+        return res.status(201).json({
+          message: "BossRaid Start!!",
+          isEntered,
+          raidRecordId,
+        });
       }
     } catch (err) {
       console.error(err);
       throw err;
     }
-
-    return res.status(201).json({
-      message: "BossRaid Start!!",
-      isEntered,
-      raidRecordId,
-    });
   }
 
   static async stopBossRaid(req, res) {
