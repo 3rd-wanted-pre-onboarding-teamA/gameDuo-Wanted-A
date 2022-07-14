@@ -2,7 +2,7 @@ const { config } = require("./config.js");
 const morgan = require("morgan");
 const express = require("express");
 const cors = require("cors");
-const router = require("./router/index.js");
+const router = require("./routes/index.js");
 const app = express();
 
 const corsOption = {
