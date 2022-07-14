@@ -6,7 +6,7 @@ const pool2 = {
     host: process.env.REDIS_URL,
     port: process.env.REDIS_PORT,
     db: process.env.DB_NUM,
-    // password: ,
+    password: process.env.REDIS_PW,
     // url: required("REDIS_URL"),
   },
 };
