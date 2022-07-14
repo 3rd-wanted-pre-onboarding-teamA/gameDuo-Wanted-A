@@ -4,7 +4,7 @@ require("date-utils");
 
 class BossRaidController {
   // 보스레이드 게임 시작
-  static startBossRaid = async function(req, res) {
+  static startBossRaid = async function (req, res) {
     const { userId, level } = req.body;
     const [data] = await BossRaidService.createId(userId, level); // raidRecordId 생성
     const raidRecordId = data.insertId;
@@ -29,7 +29,7 @@ class BossRaidController {
         isEntered = true;
       }
     } catch (err) {
-      console.error(err)
+      console.error(err);
       throw err;
     }
 
@@ -38,7 +38,7 @@ class BossRaidController {
       isEntered,
       raidRecordId,
     });
-  }
+  };
 
   // 보스레이드 게임 종료
   static stopBossRaid = async function (req, res) {
@@ -61,7 +61,7 @@ class BossRaidController {
         levels = JSON.parse(value).bossRaids[0].levels;
         console.log("from cached data");
       } else {
-        const {data} = await axios.get("https://dmpilf5svl7rv.cloudfront.net/assignment/backend/bossRaidData.json");
+        const { data } = await axios.get("https://dmpilf5svl7rv.cloudfront.net/assignment/backend/bossRaidData.json");
         await BossRaidService.putStaticData(JSON.stringify(data));
         console.log("from source data");
         bossRaidLimitSeconds = data.bossRaids[0].bossRaidLimitSeconds;
@@ -69,7 +69,7 @@ class BossRaidController {
       }
 
       /** 📍 유효성 검사 - 예외 처리
-       * 1. 
+       * 1.
        * 2. 레이드 제한시간 out
        */
       // 1.
@@ -79,7 +79,7 @@ class BossRaidController {
         });
       }
       // 2.
-      let endTime = new Date();  
+      let endTime = new Date();
       let endTimeFormat = endTime.toFormat("YYYY-MM-DD HH:MI:SS");
 
       if ((endTime.getTime() - new Date(enter_time).getTime()) / 1000 > bossRaidLimitSeconds) {
@@ -121,7 +121,7 @@ class BossRaidController {
         singleScore,
       },
     });
-  }
+  };
 }
 
 module.exports = BossRaidController;
