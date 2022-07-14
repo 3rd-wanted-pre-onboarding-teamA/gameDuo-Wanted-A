@@ -3,7 +3,7 @@ const mysqlPool = require("../db/mysqlConfig");
 const redisPool = require("../db/redisConfig");
 
 class BossRaidService {
-  static bossRaidStatus = async function () {
+  static async bossRaidStatus() {
     // 보스레이드 상태 조회
     const client = redis.createClient(redisPool);
     try {
@@ -30,20 +30,6 @@ class BossRaidService {
       throw err;
     } finally {
       connection.release();
-    }
-  }
-
-  // raidStatus에 따른 게임 시작 여부 
-  static async bossRaidStatus() {
-    const client = redis.createClient(redisPool);
-    try {
-      await client.connect();
-      const status = await client.get("raidStatus");
-      return parseInt(status, 10);
-    } catch (err) {
-      throw err;
-    } finally {
-      await client.disconnect();
     }
   }
 
