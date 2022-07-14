@@ -3,7 +3,6 @@ const RankingInfo = require("../models/rankingInfo.model");
 require("date-utils");
 const response = require("../utils/response");
 
-
 class BossRaidController {
   static async bossRaidStatus(req, res) {
     /**
