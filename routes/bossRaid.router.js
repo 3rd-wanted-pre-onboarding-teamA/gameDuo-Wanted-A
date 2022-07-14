@@ -1,10 +1,10 @@
 const express = require("express");
-const BossRaidController = require("../controllers/bossRaid.controller")
 const router = express.Router();
+const BossRaidController = require("../controllers/bossRaid.controller")
 
 router.get("/", BossRaidController.bossRaidStatus);
 router.post("/enter");
 router.patch("/end");
-router.get("/topRankerList");
+router.get("/topRankerList", BossRaidController.topRankerList);
 
 module.exports = router;
