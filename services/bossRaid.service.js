@@ -35,7 +35,9 @@ class BossRaidService {
       console.error(err);
       throw err;
     } finally {
-      connection.release();
+      if (connection) {
+        connection.release();
+      }
     }
   }
 
@@ -118,7 +120,9 @@ class BossRaidService {
       console.error(err);
       throw err;
     } finally {
-      connection.release();
+      if (connection) {
+        connection.release();
+      }
     }
   }
 
@@ -136,7 +140,9 @@ class BossRaidService {
       console.error(err);
       throw err;
     } finally {
-      connection.release();
+      if (connection) {
+        connection.release();
+      }
     }
   }
 
@@ -154,7 +160,9 @@ class BossRaidService {
       console.error(err);
       throw err;
     } finally {
-      connection.release();
+      if (connection) {
+        connection.release();
+      }
     }
   }
 
@@ -172,7 +180,9 @@ class BossRaidService {
       console.error(err);
       throw err;
     } finally {
-      connection.release();
+      if (connection) {
+        connection.release();
+      }
     }
   }
 
@@ -190,7 +200,9 @@ class BossRaidService {
       console.error(err);
       throw err;
     } finally {
-      connection.release();
+      if (connection) {
+        connection.release();
+      }
     }
   }
 
@@ -228,7 +240,9 @@ class BossRaidService {
     } catch (err) {
       throw err;
     } finally {
-      connection.release();
+      if (connection) {
+        connection.release();
+      }
     }
   }
 
@@ -245,7 +259,9 @@ class BossRaidService {
     } catch (err) {
       throw err;
     } finally {
-      connection.release();
+      if (connection) {
+        connection.release();
+      }
     }
   }
 
