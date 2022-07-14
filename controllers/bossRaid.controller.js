@@ -64,8 +64,7 @@ class BossRaidController {
     const [totalScore] = await BossRaidService.findTotalScore(userId);
     let { score } = totalScore[0];
     const [data] = await BossRaidService.findLevel(raidRecordId);
-    const { user_id, boss_raid_level, enter_time } = data[0];
-
+    const { user_id, boss_raid_level, enter_time, end_time } = data[0];
     try { // 게임 레벨 별 점수 관련 static data 💽 Redis에 캐싱하여 사용하기
       let value = await BossRaidService.levelCahceToRedis();
       let bossRaidLimitSeconds, levels;
@@ -99,39 +98,49 @@ class BossRaidController {
       let endTimeFormat = endTime.toFormat("YYYY-MM-DD HH:MI:SS");
 
       if ((endTime.getTime() - new Date(enter_time).getTime()) / 1000 > bossRaidLimitSeconds) {
+        // raidStatus 삭제
+        await BossRaidService.delRedisStatus();
         return res.status(400).json({
-          message: "레이드 제한시간을 넘었으므로 기록에 남지 않습니다.",
+          message: "레이드 제한시간을 넘었으므로 레이드 실패입니다.",
         });
       }
 
-      // success 여부 입력
-      await BossRaidService.setSuccess(raidRecordId);
+      // 기존에 end_time값이 있다면 게임 종료를 처리한 데이터이기 때문에 중복되지 않게 처리
+      if (!end_time) {
+        // success 여부 입력
+        await BossRaidService.setSuccess(raidRecordId);
+  
+        // 게임 종료후 end_time 입력
+        await BossRaidService.putEndTime(raidRecordId, endTimeFormat);
+  
+        // 유저테이블 총점 업데이트
+        await BossRaidService.updateTotalScore(userId, score);
+  
+        // raidStatus 삭제
+        await BossRaidService.delRedisStatus();
+  
+        // 랭킹 업데이트
+        await BossRaidController.topRankerToCache();
 
-      // 게임 종료후 end_time 입력
-      await BossRaidService.putEndTime(raidRecordId, endTimeFormat);
-
-      // 유저테이블 총점 업데이트
-      await BossRaidService.updateTotalScore(userId, score);
-
-      // raidStatus 삭제
-      await BossRaidService.delRedisStatus();
-
-      // 랭킹 업데이트
-      await BossRaidController.topRankerToCache();
+        res.status(200).json({
+          message: "게임종료",
+          bossRaidEndData: {
+            userId,
+            raidRecordId,
+            bossRaidLevel: boss_raid_level,
+            totalScore: score,
+            singleScore,
+          },
+        });
+      } else {
+        res.status(404).json({
+          message: "이미 게임이 종료되었습니다."
+        })
+      }
     } catch (err) {
       throw err;
     }
 
-    res.status(200).json({
-      message: "게임종료",
-      bossRaidEndData: {
-        userId,
-        raidRecordId,
-        bossRaidLevel: boss_raid_level,
-        totalScore: score,
-        singleScore,
-      },
-    });
   }
 
   static async topRankerList(req, res) {

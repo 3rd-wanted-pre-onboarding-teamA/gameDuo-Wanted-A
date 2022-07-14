@@ -109,7 +109,7 @@ class BossRaidService {
      * 기능: 게임 끝난 후 점수 합산을 위한 boss_raid_level 찾기 (boss_raid table)
      * 작성자: 이승연
      */
-    const sql = `SELECT user_id, boss_raid_level, enter_time FROM boss_raid WHERE raid_record_id=${raidRecordId}`;
+    const sql = `SELECT user_id, boss_raid_level, enter_time, end_time FROM boss_raid WHERE raid_record_id=${raidRecordId}`;
     let connection = null;
     try {
       connection = await mysqlPool.getConnection(async (conn) => conn);
