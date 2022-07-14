@@ -3,8 +3,11 @@ const mysqlPool = require("../db/mysqlConfig");
 const redisPool = require("../db/redisConfig");
 
 class BossRaidService {
-  static bossRaidStatus = async function () {
-    // 보스레이드 상태 조회
+  static async bossRaidStatus() {
+    /**
+     * 기능: 보스레이드 상태 조회
+     * 작성자: 장덕수
+     */
     const client = redis.createClient(redisPool);
     try {
       await client.connect();
@@ -17,8 +20,11 @@ class BossRaidService {
     }
   };
 
-  // 중복되지 않는 raidRecordId 생성
   static async createId(userId, level) {
+    /**
+     * 기능: 중복되지 않는 raidRecordId 생성
+     * 작성자: 이승연
+     */
     const sql = `INSERT INTO boss_raid (user_id, boss_raid_level) VALUES (?)`;
     const values = [[userId, level]];
     let connection = null;
@@ -33,22 +39,11 @@ class BossRaidService {
     }
   }
 
-  // raidStatus에 따른 게임 시작 여부 
-  static async bossRaidStatus() {
-    const client = redis.createClient(redisPool);
-    try {
-      await client.connect();
-      const status = await client.get("raidStatus");
-      return parseInt(status, 10);
-    } catch (err) {
-      throw err;
-    } finally {
-      await client.disconnect();
-    }
-  }
-
-  // 게임 시작 가능하면 raidStatus에 raidRecordId 넣기
   static async putRaidRecordId(raidRecordId) {
+    /**
+     * 기능: 게임 시작 가능시 raidStatus에 raidRecordId 넣기
+     * 작성자: 이승연
+     */
     const client = redis.createClient(redisPool);
     try {
         await client.connect();
@@ -61,7 +56,10 @@ class BossRaidService {
   }
 
   static async levelCahceToRedis() {
-    // 게임 레벨 별 점수 관련 static data 캐싱 (Redis 사용)
+    /**
+     * 기능: 게임 레벨 별 점수 관련 static data 캐싱 (Redis 사용)
+     * 작성자: 이승연
+     */
     const client = redis.createClient(redisPool);
     try {
         await client.connect();
@@ -75,7 +73,10 @@ class BossRaidService {
   }
 
   static async putStaticData(data) {
-    // redis 캐시에 점수관련 static data 없으면 캐싱하기
+    /**
+     * 기능: redis 캐시에 점수관련 static data 없으면 캐싱하기
+     * 작성자: 이승연
+     */
     const client = redis.createClient(redisPool);
     try {
         await client.connect();
@@ -88,7 +89,10 @@ class BossRaidService {
   }
 
   static async delRedisStatus() {
-    // redisStatus 삭제 (게임 종료 후)
+    /**
+     * 기능: redisStatus 삭제 (게임 종료 후)
+     * 작성자: 이승연
+     */
     const client = redis.createClient(redisPool);
     try {
         await client.connect();
@@ -100,8 +104,11 @@ class BossRaidService {
     }
   }
 
-  // 게임 끝난 후 점수 합산을 위한 boss_raid_level 찾기 (boss_raid table)
   static async findLevel(raidRecordId) {
+    /**
+     * 기능: 게임 끝난 후 점수 합산을 위한 boss_raid_level 찾기 (boss_raid table)
+     * 작성자: 이승연
+     */
     const sql = `SELECT user_id, boss_raid_level, enter_time FROM boss_raid WHERE raid_record_id=${raidRecordId}`;
     let connection = null;
     try {
@@ -115,8 +122,11 @@ class BossRaidService {
     }
   }
 
-  // 게임 끝난 후 점수 합산을 위한 총점 찾기 (user table)
   static async findTotalScore(userId) {
+    /**
+     * 기능: 게임 끝난 후 점수 합산을 위한 총점 찾기 (user table)
+     * 작성자: 이승연
+     */
     const sql = `SELECT * FROM user WHERE user_id=${userId}`;
     let connection = null;
     try {
@@ -130,8 +140,11 @@ class BossRaidService {
     }
   }
 
-  // 게임 끝난 후 게임 종료 시간 입력
   static async putEndTime(raidRecordId, end_time) {
+    /**
+     * 기능: 게임 끝난 후 게임 종료 시간 입력
+     * 작성자: 이승연
+     */
     const sql = `UPDATE boss_raid SET end_time="${end_time}" WHERE raid_record_id=${raidRecordId}`;
     let connection = null;
     try {
@@ -145,8 +158,11 @@ class BossRaidService {
     }
   }
 
-  // success 저장
   static async setSuccess(raidRecordId) {
+    /**
+     * 기능: boss_raid테이블에 success 상태 업데이트
+     * 작성자: 이승연
+     */
     const sql = `UPDATE boss_raid SET success=true WHERE raid_record_id=${raidRecordId}`;
     let connection = null;
     try {
@@ -160,8 +176,11 @@ class BossRaidService {
     }
   }
 
-  // 유저 테이블에 총점 업데이트하기
   static async updateTotalScore(userId, score) {
+    /**
+     * 기능: 유저 테이블에 총점 업데이트
+     * 작성자: 이승연
+     */
     const sql = `UPDATE user SET score=${score} WHERE user_id=${userId}`;
     let connection = null;
     try {
@@ -176,7 +195,10 @@ class BossRaidService {
   }
 
   static async topRankerInfoList() {
-    // Top 10 랭커 redis에서 추출
+    /**
+     * 기능: Top 10 랭커 redis에서 추출
+     * 작성자: 허정연
+     */
     let client = null;
     try {
       client = redis.createClient(redisPool);
@@ -194,7 +216,10 @@ class BossRaidService {
   }
 
   static async myRankingInfo(userId) {
-    // 내 랭킹 조회
+    /**
+     * 기능: 내 랭킹 조회
+     * 작성자: 허정연
+     */
     const sql = `select * from (select row_number() over(order by score desc) as ranking, user_id as "userId", score as "totalScore" from user)r where userId = ${userId}`;
     let connection = null;
     try {
@@ -208,7 +233,10 @@ class BossRaidService {
   }
 
   static async topRankerInfoListSelect() {
-    // Top 10 랭커 mysql에서 추출
+    /**
+     * 기능: Top 10 랭커 mysql에서 추출
+     * 작성자: 허정연
+     */
     const sql = `select * from user order by score desc limit 10`;
     let connection = null;
     try {
@@ -222,7 +250,10 @@ class BossRaidService {
   }
 
   static async setTopRankerToCache(rankingInfoData) {
-    // Top 10 랭커 redis cache에 설정
+    /**
+     * 기능: Top 10 랭커 redis cache에 설정
+     * 작성자: 허정연
+     */
     let client = null;
     try {
       client = redis.createClient(redisPool);

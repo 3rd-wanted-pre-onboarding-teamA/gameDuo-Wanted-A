@@ -1,10 +1,13 @@
 const BossRaidService = require("../services/bossRaid.service");
 const RankingInfo = require("../models/rankingInfo.model");
-const { setTopRankerToCache } = require("../services/bossRaid.service");
 require("date-utils");
 
 class BossRaidController {
-  static bossRaidStatus = async function (req, res) {
+  static async bossRaidStatus(req, res) {
+    /**
+     * 기능: 상태 조회
+     * 작성자: 장덕수
+     */
     try {
       let raidStatus = await BossRaidService.bossRaidStatus();
       if (!raidStatus) {
@@ -20,28 +23,25 @@ class BossRaidController {
     }
   };
 
-  // 보스레이드 게임 시작
   static async startBossRaid(req, res) {
+    /**
+     * 기능: 보스레이드 게임 시작
+     * 작성자: 이승연
+     */
     const { userId, level } = req.body;
     const [data] = await BossRaidService.createId(userId, level); // raidRecordId 생성
     const raidRecordId = data.insertId;
     let isEntered = false;
 
-    /**
-     * Redis에서 raidStatus가 있으면 이미 사용중이므로 게임 시작이 불가능하고
-     * 반대의 경우 게임 시작이 가능하다
-     */
-    try {
+    try { // Redis에서 raidStatus가 있으면 이미 사용중이므로 게임 시작이 불가능하고 반대의 경우 게임 시작이 가능하다
       let raidStatus = await BossRaidService.bossRaidStatus();
-      if (raidStatus) {
-        // 게임 시작 불가능
+      if (raidStatus) { // 게임 시작 불가능
         isEntered = true;
         return res.status(400).json({
           message: "이미 게임중인 사용자가 있습니다.",
           isEntered,
         });
-      } else {
-        // 게임 시작 가능
+      } else { // 게임 시작 가능
         await BossRaidService.putRaidRecordId(raidRecordId);
         isEntered = true;
       }
@@ -57,8 +57,11 @@ class BossRaidController {
     });
   }
 
-  // 보스레이드 게임 종료
   static async stopBossRaid(req, res) {
+    /**
+     * 기능: 보스레이드 게임 종료
+     * 작성자: 이승연
+     */
     let singleScore; // 게임 종료 후 총점에 합산할 점수
     const { userId, raidRecordId } = req.body;
     const [totalScore] = await BossRaidService.findTotalScore(userId);
@@ -66,11 +69,7 @@ class BossRaidController {
     const [data] = await BossRaidService.findLevel(raidRecordId);
     const { user_id, boss_raid_level, enter_time } = data[0];
 
-    /**
-     * 게임 레벨 별 점수 관련 static data
-     * 💽 Redis에 캐싱하여 사용하기
-     */
-    try {
+    try { // 게임 레벨 별 점수 관련 static data 💽 Redis에 캐싱하여 사용하기
       let value = await BossRaidService.levelCahceToRedis();
       let bossRaidLimitSeconds, levels;
       if (value) {
@@ -85,28 +84,20 @@ class BossRaidController {
         levels = data.bossRaids[0].levels;
       }
 
-      /*
-       * 방금 게임을 끝낸 raidRecordId가 진행한 게임 레벨을 찾아서
-       * 해당 레벨의 점수를 해당 user_id의 score에 합산하자.
-       */
-      levels.forEach((info) => {
+      levels.forEach((info) => { // 방금 게임을 끝낸 raidRecordId가 진행한 게임 레벨을 찾아서 해당 레벨의 점수를 해당 user_id의 score에 합산
         if (boss_raid_level === info.level) {
           singleScore = info.score;
           score = score + singleScore;
         }
       });
 
-      /** 📍 유효성 검사 - 예외 처리
-       * 1.
-       * 2. 레이드 제한시간 out
-       */
-      // 1.
+      // 1. 유효성 검사 - 예외 처리 (user)
       if (user_id !== userId) {
         return res.status(403).json({
           message: "아이디가 다르므로 접근 불가합니다.",
         });
       }
-      // 2.
+      // 2. 유효성 검사 - 예외 처리 (레이드 제한시간 초과)
       let endTime = new Date();
       let endTimeFormat = endTime.toFormat("YYYY-MM-DD HH:MI:SS");
 
@@ -146,17 +137,16 @@ class BossRaidController {
     });
   }
 
-  static topRankerList = async function (req, res) {
-    /*
-      랭킹 조회
-      - top10 랭킹은 redis에서 조회
-      - 내 랭킹은 mysql에서 조회
-    */
+  static async topRankerList(req, res) {
+    /**
+     * 기능: 랭킹 조회
+     * 작성자: 허정연
+     */
     const { userId } = req.body;
     let rankingInfoData = [];
     let rankingInfoJsonArr = [];
 
-    try {
+    try { 
       rankingInfoJsonArr = await BossRaidService.topRankerInfoList();
       rankingInfoJsonArr = JSON.parse(rankingInfoJsonArr);
       for (let i = 0; i < rankingInfoJsonArr.length; i++) {
@@ -172,12 +162,11 @@ class BossRaidController {
     }
   };
 
-  static topRankerToCache = async function (req, res) {
-    /*
-      mysql에서 받아온 TopRanker를 캐시에 설정
-      1. 서버 시작시 동작
-      2. 게임 끝날 때 동작
-    */
+  static async topRankerToCache(req, res) {
+    /**
+     * 기능: mysql에서 받아온 TopRanker를 캐시에 설정
+     * 작성자: 허정연
+     */
     let rankingInfoData = [];
     try {
       rankingInfoData = await BossRaidService.topRankerInfoListSelect();
