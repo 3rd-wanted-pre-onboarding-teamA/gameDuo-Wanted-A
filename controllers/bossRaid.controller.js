@@ -1,5 +1,5 @@
 const BossRaidService = require("../services/bossRaid.service");
-const RankingInfo = require("../models/RankingInfo.model");
+const RankingInfo = require("../models/rankingInfo.model");
 
 class BossRaidController {
   static bossRaidStatus = async function (req, res) {
