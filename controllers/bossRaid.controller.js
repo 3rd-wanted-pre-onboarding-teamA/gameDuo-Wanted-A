@@ -1,18 +1,18 @@
 const BossRaidService = require("../services/bossRaid.service");
 const RankingInfo = require("../models/rankingInfo.model");
-const { setTopRankerToCache } = require('../services/bossRaid.service');
-require("date-utils")
+const { setTopRankerToCache } = require("../services/bossRaid.service");
+require("date-utils");
 
 class BossRaidController {
   static bossRaidStatus = async function (req, res) {
     try {
       let raidStatus = await BossRaidService.bossRaidStatus();
       if (!raidStatus) {
-        return res.status(200).json({canEnter: 0});
+        return res.status(200).json({ canEnter: 0 });
       } else {
         return res.status(200).json({
           canEnter: 1,
-          enteredUserId: raidStatus
+          enteredUserId: raidStatus,
         });
       }
     } catch (err) {
@@ -46,7 +46,7 @@ class BossRaidController {
         isEntered = true;
       }
     } catch (err) {
-      console.error(err)
+      console.error(err);
       throw err;
     }
 
@@ -56,21 +56,6 @@ class BossRaidController {
       raidRecordId,
     });
   }
-  static topRankerToCache = async function (req, res) {
-    /*
-      mysql에서 받아온 TopRanker를 캐시에 설정
-      1. 서버 시작시 동작
-      2. 게임 끝날 때 동작
-    */
-    let rankingInfoData = [];
-    try {
-      rankingInfoData = await BossRaidService.topRankerInfoListSelect();
-      await BossRaidService.setTopRankerToCache(rankingInfoData[0]);
-      console.log("랭킹이 재설정되었습니다.");
-    } catch (err) {
-      throw err;
-    }
-  };
 
   // 보스레이드 게임 종료
   static async stopBossRaid(req, res) {
@@ -93,7 +78,7 @@ class BossRaidController {
         levels = JSON.parse(value).bossRaids[0].levels;
         console.log("from cached data");
       } else {
-        const {data} = await axios.get("https://dmpilf5svl7rv.cloudfront.net/assignment/backend/bossRaidData.json");
+        const { data } = await axios.get("https://dmpilf5svl7rv.cloudfront.net/assignment/backend/bossRaidData.json");
         await BossRaidService.putStaticData(JSON.stringify(data));
         console.log("from source data");
         bossRaidLimitSeconds = data.bossRaids[0].bossRaidLimitSeconds;
@@ -112,7 +97,7 @@ class BossRaidController {
       });
 
       /** 📍 유효성 검사 - 예외 처리
-       * 1. 
+       * 1.
        * 2. 레이드 제한시간 out
        */
       // 1.
@@ -122,7 +107,7 @@ class BossRaidController {
         });
       }
       // 2.
-      let endTime = new Date();  
+      let endTime = new Date();
       let endTimeFormat = endTime.toFormat("YYYY-MM-DD HH:MI:SS");
 
       if ((endTime.getTime() - new Date(enter_time).getTime()) / 1000 > bossRaidLimitSeconds) {
@@ -145,7 +130,6 @@ class BossRaidController {
 
       // 랭킹 업데이트
       await BossRaidController.topRankerToCache();
-      
     } catch (err) {
       throw err;
     }
@@ -168,7 +152,7 @@ class BossRaidController {
       - top10 랭킹은 redis에서 조회
       - 내 랭킹은 mysql에서 조회
     */
-    const { userId }  = req.body;
+    const { userId } = req.body;
     let rankingInfoData = [];
     let rankingInfoJsonArr = [];
 
@@ -181,14 +165,28 @@ class BossRaidController {
       const [myRankingInfoData] = await BossRaidService.myRankingInfo(userId);
       res.status(200).json({
         topRankerInfoList: rankingInfoData,
-        myRankingInfo: myRankingInfoData[0] 
+        myRankingInfo: myRankingInfoData[0],
       });
     } catch (err) {
       throw err;
-    } 
+    }
   };
 
-  
+  static topRankerToCache = async function (req, res) {
+    /*
+      mysql에서 받아온 TopRanker를 캐시에 설정
+      1. 서버 시작시 동작
+      2. 게임 끝날 때 동작
+    */
+    let rankingInfoData = [];
+    try {
+      rankingInfoData = await BossRaidService.topRankerInfoListSelect();
+      await BossRaidService.setTopRankerToCache(rankingInfoData[0]);
+      console.log("랭킹이 재설정되었습니다.");
+    } catch (err) {
+      throw err;
+    }
+  };
 }
 
 module.exports = BossRaidController;
