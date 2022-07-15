@@ -1,33 +1,23 @@
-const { config } = require("./config.js");
 const morgan = require("morgan");
 const express = require("express");
 const cors = require("cors");
-const router = require("./router/index.js");
-const redis = require("redis");
-
-// Redis 연동 부분
-async function run() {
-  const client = redis.createClient();
-
-  await client.connect();
-  console.log("Redis Server Opened??:", client.isOpen);
-
-  await client.disconnect();
-}
-run();
+const router = require("./routes/index.js");
+const app = express();
+const BossRaidController = require("./controllers/bossRaid.controller");
+const dotenv = require("dotenv");
+dotenv.config();
 
 const corsOption = {
-  origin: config.cors.allowedOrigin,
   optionsSuccessStatus: 200,
 };
-
-const app = express();
 
 app.use(express.json());
 app.use(cors(corsOption));
 app.use(morgan("tiny"));
 
-app.use("/", router);
+app.use("/", router, (req, res, next) => {
+  res.send("Hello from API server");
+});
 
 app.use((req, res, next) => {
   res.sendStatus(404);
@@ -38,14 +28,10 @@ app.use((err, req, res, next) => {
   res.sendStatus(500);
 });
 
-console.log("Server start!!!");
-
-app.get("/", (req, res, next) => {
-  res.send("Hello from API Server");
-});
-
-const PORT = config.port || 3000;
+const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
 });
+
+BossRaidController.topRankerToCache();
