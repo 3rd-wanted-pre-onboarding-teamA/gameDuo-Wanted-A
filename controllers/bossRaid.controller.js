@@ -2,6 +2,7 @@ const BossRaidService = require("../services/bossRaid.service");
 const RankingInfo = require("../models/rankingInfo.model");
 const getStaticData = require("../utils/getStaticData");
 require("date-utils");
+const response = require("../utils/response");
 
 class BossRaidController {
   static async bossRaidStatus(req, res) {
@@ -20,21 +21,21 @@ class BossRaidController {
         });
       }
     } catch (err) {
-      throw err;
+      res.status(500).json(response.INTERNAL_SERVER_ERROR);
     }
   };
 
   static async startBossRaid(req, res) {
     /**
      * 기능: 보스레이드 게임 시작
-     * 작성자: 이승연
+     * 작성자: 이승연 장덕수
      */
     let isEntered = false;
     try { // Redis에서 raidStatus가 있으면 이미 사용중이므로 게임 시작이 불가능하고 반대의 경우 게임 시작이 가능하다
       let raidStatus = await BossRaidService.bossRaidStatus();
       if (raidStatus) { // 게임 시작 불가능
         return res.status(400).json({
-          message: "이미 게임중인 사용자가 있습니다.",
+          message: response.USING_GAME,
           isEntered,
         });
       } else { // 게임 시작 가능
@@ -45,21 +46,20 @@ class BossRaidController {
         await BossRaidService.putRaidRecordId(raidRecordId, bossRaidLimitSeconds);
         isEntered = true;
         return res.status(201).json({
-          message: "BossRaid Start!!",
+          message: response.GAME_START,
           isEntered,
           raidRecordId,
         });
       }
     } catch (err) {
-      console.error(err);
-      throw err;
+      res.status(500).json(response.INTERNAL_SERVER_ERROR);
     }
   }
 
   static async stopBossRaid(req, res) {
     /**
      * 기능: 보스레이드 게임 종료
-     * 작성자: 이승연
+     * 작성자: 이승연 장덕수
      */
     let singleScore; // 게임 종료 후 총점에 합산할 점수
     const { userId, raidRecordId } = req.body;
@@ -81,7 +81,7 @@ class BossRaidController {
       // 1. 유효성 검사 - 예외 처리 (user)
       if (user_id !== userId) {
         return res.status(403).json({
-          message: "아이디가 다르므로 접근 불가합니다.",
+          message: response.DIFF_USERID
         });
       }
       // 2. 유효성 검사 - 예외 처리 (레이드 제한시간 초과)
@@ -92,7 +92,7 @@ class BossRaidController {
         // raidStatus 삭제
         await BossRaidService.delRedisStatus();
         return res.status(400).json({
-          message: "레이드 제한시간을 넘었으므로 레이드 실패입니다.",
+          message: response.TIMEOUT,
         });
       }
 
@@ -114,7 +114,7 @@ class BossRaidController {
         await BossRaidController.topRankerToCache();
 
         res.status(200).json({
-          message: "게임종료",
+          message: response.GAME_END,
           bossRaidEndData: {
             userId,
             raidRecordId,
@@ -129,9 +129,8 @@ class BossRaidController {
         })
       }
     } catch (err) {
-      throw err;
+      res.status(500).json(response.INTERNAL_SERVER_ERROR);
     }
-
   }
 
   static async topRankerList(req, res) {
@@ -155,7 +154,7 @@ class BossRaidController {
         myRankingInfo: myRankingInfoData[0],
       });
     } catch (err) {
-      throw err;
+      res.status(500).json(response.INTERNAL_SERVER_ERROR);
     }
   };
 
@@ -168,9 +167,10 @@ class BossRaidController {
     try {
       rankingInfoData = await BossRaidService.topRankerInfoListSelect();
       await BossRaidService.setTopRankerToCache(rankingInfoData[0]);
-      console.log("랭킹이 재설정되었습니다.");
+      console.log(response.RANKING_RESET);
     } catch (err) {
-      throw err;
+      console.error(err);
+      res.status(500).json(response.INTERNAL_SERVER_ERROR);
     }
   };
 }

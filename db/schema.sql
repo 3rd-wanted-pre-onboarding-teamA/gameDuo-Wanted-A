@@ -1,11 +1,11 @@
 create database gameduo_boss_raid_pve;
-use gameduo_boss_raid_pve;
-create table user ( -- 유저
+-- use gameduo_boss_raid_pve;
+create table gameduo_boss_raid_pve.user ( -- 유저
   user_id int not null auto_increment,
   score int default 0,
   primary key(user_id)
 );
-create table boss_raid ( -- 보스레이드
+create table gameduo_boss_raid_pve.boss_raid ( -- 보스레이드
   raid_record_id int not null auto_increment,
   user_id int not null,
   enter_time datetime default now(), 

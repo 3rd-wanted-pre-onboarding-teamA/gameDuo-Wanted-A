@@ -6,7 +6,8 @@
   "type": "commonjs",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon app"
+    "start": "node app.js",
+    "local": "nodemon app"
   },
   "repository": {
     "type": "git",
@@ -28,5 +29,8 @@
     "morgan": "^1.10.0",
     "mysql2": "^2.3.3",
     "redis": "^4.2.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.19"
   }
 }
