@@ -70,6 +70,8 @@ class BossRaidController {
       let { score } = totalScore[0];
       const [data] = await BossRaidService.findLevel(raidRecordId);
       const { user_id, boss_raid_level, enter_time, end_time } = data[0];
+      const [raidRecordIdData] = await BossRaidService.findRaidRcordId();
+      const { raid_record_id } = raidRecordIdData[0];
       const bossRaidLimitSeconds = (await getStaticData()).bossRaidLimitSeconds;
       const levels = (await getStaticData()).levels;
 
@@ -81,7 +83,7 @@ class BossRaidController {
       });
 
       // 1. 유효성 검사 - 예외 처리 (user)
-      if (user_id !== userId) {
+      if (user_id !== userId && raid_record_id !== raidRecordId) {
         return res.status(403).json({
           message: response.DIFF_USERID
         });
@@ -100,11 +102,8 @@ class BossRaidController {
 
       // 기존에 end_time값이 있다면 게임 종료를 처리한 데이터이기 때문에 중복되지 않게 처리
       if (!end_time) {
-        // success 여부 입력
-        await BossRaidService.setSuccess(raidRecordId);
-  
-        // 게임 종료후 end_time 입력
-        await BossRaidService.putEndTime(raidRecordId, endTimeFormat);
+        // 보스레이드 테이블 업데이트
+        await BossRaidService.updateBossRaid(raidRecordId, endTimeFormat);
   
         // 유저테이블 총점 업데이트
         await BossRaidService.updateTotalScore(userId, score);
