@@ -1,7 +1,7 @@
 const redis = require("redis");
 const mysqlPool = require("../db/mysqlConfig");
 const redisPool = require("../db/redisConfig");
-const response = require("../utils/response");
+const sql = require("../utils/sql");
 
 class BossRaidService {
   static async bossRaidStatus() {
@@ -14,10 +14,10 @@ class BossRaidService {
     try {
       await client.connect();
       const status = await client.get("raidStatus");
-      const sql = `SELECT user_id FROM boss_raid WHERE raid_record_id=${status};`
+      const query = sql.SELECT_USER_ID;
       connection = await mysqlPool.getConnection(async (conn) => conn);
       if (status) {
-        const userId = await connection.query(sql);
+        const userId = await connection.query(query,[status]);
         return parseInt(userId[0][0].user_id, 10);
       }
       else return null;
@@ -36,12 +36,13 @@ class BossRaidService {
      * 기능: 중복되지 않는 raidRecordId 생성
      * 작성자: 이승연
      */
-    const sql = `INSERT INTO boss_raid (user_id, boss_raid_level) VALUES (?)`;
+    const query = sql.INSERT_BOSS_RAID;
+    // const sql = `INSERT INTO boss_raid (user_id, boss_raid_level) VALUES (?)`;
     const values = [[userId, level]];
     let connection = null;
     try {
       connection = await mysqlPool.getConnection(async (conn) => conn);
-      return await connection.query(sql, values);
+      return await connection.query(query, values);
     } catch (err) {
       console.log(err);
       throw err;
@@ -69,7 +70,7 @@ class BossRaidService {
     }
   }
 
-  static async levelCahceToRedis() {
+  static async levelCacheToRedis() {
     /**
      * 기능: 게임 레벨 별 점수 관련 static data 캐싱 (Redis 사용)
      * 작성자: 이승연
@@ -123,11 +124,12 @@ class BossRaidService {
      * 기능: 게임 끝난 후 점수 합산을 위한 boss_raid_level 찾기 (boss_raid table)
      * 작성자: 이승연
      */
-    const sql = `SELECT user_id, boss_raid_level, enter_time, end_time FROM boss_raid WHERE raid_record_id=${raidRecordId}`;
+    const query = sql.SELECT_ALL_BOSS_RAID;
+    // const sql = `SELECT user_id, boss_raid_level, enter_time, end_time FROM boss_raid WHERE raid_record_id=${raidRecordId}`;
     let connection = null;
     try {
       connection = await mysqlPool.getConnection(async (conn) => conn);
-      return await connection.query(sql);
+      return await connection.query(query, [raidRecordId]);
     } catch (err) {
       console.log(err);
     } finally {
@@ -142,11 +144,12 @@ class BossRaidService {
      * 기능: 게임 끝난 후 점수 합산을 위한 총점 찾기 (user table)
      * 작성자: 이승연
      */
-    const sql = `SELECT * FROM user WHERE user_id=${userId}`;
+    const query = sql.SELECT_ALL_USER;
+    // const sql = `SELECT * FROM user WHERE user_id=${userId}`;
     let connection = null;
     try {
       connection = await mysqlPool.getConnection(async (conn) => conn);
-      return await connection.query(sql);
+      return await connection.query(query, [userId]);
     } catch (err) {
       console.log(err);
     } finally {
@@ -156,35 +159,33 @@ class BossRaidService {
     }
   }
 
-  static async putEndTime(raidRecordId, end_time) {
+  static async findRaidRcordId() {
+    const query = sql.SELECT_RECORD_ID;
+    // const sql = `SELECT raid_record_id FROM boss_raid ORDER BY raid_record_id DESC limit 1`;
+    let connection = null;
+    try {
+      connection = await mysqlPool.getConnection(async (conn) => conn);
+      return await connection.query(query);
+    } catch (err) {
+      console.log(err);
+    } finally {
+      if (connection) {
+        connection.release();
+      }
+    }
+  }
+
+  static async updateBossRaid(raidRecordId, endTime) {
     /**
      * 기능: 게임 끝난 후 게임 종료 시간 입력
      * 작성자: 이승연
      */
-    const sql = `UPDATE boss_raid SET end_time="${end_time}" WHERE raid_record_id=${raidRecordId}`;
+    const query = sql.UPDATE_BOSS_RAID + raidRecordId;
+    // const sql = `UPDATE boss_raid SET end_time="${end_time}" WHERE raid_record_id=${raidRecordId}`;
     let connection = null;
     try {
       connection = await mysqlPool.getConnection(async (conn) => conn);
-      return await connection.query(sql);
-    } catch (err) {
-      console.log(err);
-    } finally {
-      if (connection) {
-        connection.release();
-      }
-    }
-  }
-
-  static async setSuccess(raidRecordId) {
-    /**
-     * 기능: boss_raid테이블에 success 상태 업데이트
-     * 작성자: 이승연
-     */
-    const sql = `UPDATE boss_raid SET success=true WHERE raid_record_id=${raidRecordId}`;
-    let connection = null;
-    try {
-      connection = await mysqlPool.getConnection(async (conn) => conn);
-      return await connection.query(sql);
+      return await connection.query(query, [endTime]);
     } catch (err) {
       console.log(err);
     } finally {
@@ -199,11 +200,12 @@ class BossRaidService {
      * 기능: 유저 테이블에 총점 업데이트
      * 작성자: 이승연
      */
-    const sql = `UPDATE user SET score=${score} WHERE user_id=${userId}`;
+    const query = sql.UPDATE_TOTAL_SCORE + userId;
+    // const sql = `UPDATE user SET score=${score} WHERE user_id=${userId}`;
     let connection = null;
     try {
       connection = await mysqlPool.getConnection(async (conn) => conn);
-      return await connection.query(sql);
+      return await connection.query(query, [score]);
     } catch (err) {
       console.log(err);
     } finally {
@@ -235,11 +237,12 @@ class BossRaidService {
      * 기능: 내 랭킹 조회
      * 작성자: 허정연
      */
-    const sql = `select * from (select row_number() over(order by score desc) as ranking, user_id as "userId", score as "totalScore" from user)r where userId = ${userId}`;
+    // const sql = `select * from (select row_number() over(order by score desc) as ranking, user_id as "userId", score as "totalScore" from user)r where userId = ${userId}`;
+    const query = sql.SELECT_MY_RANKING;
     let connection = null;
     try {
       connection = await mysqlPool.getConnection(async (conn) => conn);
-      return await connection.query(sql);
+      return await connection.query(query, [userId]);
     } catch (err) {
       console.log(err);
     } finally {
@@ -254,11 +257,12 @@ class BossRaidService {
      * 기능: Top 10 랭커 mysql에서 추출
      * 작성자: 허정연
      */
-    const sql = `select * from user order by score desc limit 10`;
+    // const sql = `select * from user order by score desc limit 10`;
+    const query = sql.SELECT_TOP10_RANKING;
     let connection = null;
     try {
       connection = await mysqlPool.getConnection(async (conn) => conn);
-      return await connection.query(sql);
+      return await connection.query(query);
     } catch (err) {
       console.log(err);
     } finally {
