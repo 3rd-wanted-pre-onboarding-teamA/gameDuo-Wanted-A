@@ -37,7 +37,6 @@ class BossRaidService {
      * 작성자: 이승연
      */
     const query = sql.INSERT_BOSS_RAID;
-    // const sql = `INSERT INTO boss_raid (user_id, boss_raid_level) VALUES (?)`;
     const values = [[userId, level]];
     let connection = null;
     try {
@@ -125,7 +124,6 @@ class BossRaidService {
      * 작성자: 이승연
      */
     const query = sql.SELECT_ALL_BOSS_RAID;
-    // const sql = `SELECT user_id, boss_raid_level, enter_time, end_time FROM boss_raid WHERE raid_record_id=${raidRecordId}`;
     let connection = null;
     try {
       connection = await mysqlPool.getConnection(async (conn) => conn);
@@ -145,7 +143,6 @@ class BossRaidService {
      * 작성자: 이승연
      */
     const query = sql.SELECT_ALL_USER;
-    // const sql = `SELECT * FROM user WHERE user_id=${userId}`;
     let connection = null;
     try {
       connection = await mysqlPool.getConnection(async (conn) => conn);
@@ -161,7 +158,6 @@ class BossRaidService {
 
   static async findRaidRcordId() {
     const query = sql.SELECT_RECORD_ID;
-    // const sql = `SELECT raid_record_id FROM boss_raid ORDER BY raid_record_id DESC limit 1`;
     let connection = null;
     try {
       connection = await mysqlPool.getConnection(async (conn) => conn);
@@ -181,7 +177,6 @@ class BossRaidService {
      * 작성자: 이승연
      */
     const query = sql.UPDATE_BOSS_RAID + raidRecordId;
-    // const sql = `UPDATE boss_raid SET end_time="${end_time}" WHERE raid_record_id=${raidRecordId}`;
     let connection = null;
     try {
       connection = await mysqlPool.getConnection(async (conn) => conn);
@@ -201,7 +196,6 @@ class BossRaidService {
      * 작성자: 이승연
      */
     const query = sql.UPDATE_TOTAL_SCORE + userId;
-    // const sql = `UPDATE user SET score=${score} WHERE user_id=${userId}`;
     let connection = null;
     try {
       connection = await mysqlPool.getConnection(async (conn) => conn);
@@ -237,7 +231,6 @@ class BossRaidService {
      * 기능: 내 랭킹 조회
      * 작성자: 허정연
      */
-    // const sql = `select * from (select row_number() over(order by score desc) as ranking, user_id as "userId", score as "totalScore" from user)r where userId = ${userId}`;
     const query = sql.SELECT_MY_RANKING;
     let connection = null;
     try {
@@ -257,7 +250,6 @@ class BossRaidService {
      * 기능: Top 10 랭커 mysql에서 추출
      * 작성자: 허정연
      */
-    // const sql = `select * from user order by score desc limit 10`;
     const query = sql.SELECT_TOP10_RANKING;
     let connection = null;
     try {
