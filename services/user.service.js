@@ -48,8 +48,6 @@ class UserService {
       connection.release();
     }
   }
-
-
 }
 
 module.exports = UserService;
