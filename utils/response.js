@@ -12,5 +12,5 @@ module.exports = {
   GAME_END: "게임이 종료되었습니다.",
   RANKING_RESET: "랭킹이 재설정되었습니다.",
   NEW_USERID: "새로운 아이디가 생겼습니다.",
-  ALL_USERID: "모든 사용자를 가지고 왔습니다."
+  GET_USER_INFO: "아이디에 해당하는 정보를 가져왔습니다."
 };

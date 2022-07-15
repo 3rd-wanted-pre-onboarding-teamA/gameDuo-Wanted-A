@@ -15,31 +15,45 @@ class UserService {
       const [result] = await connection.query(sql);
       return result;
     } catch (err) {
-      throw err;
+      console.log(err);
     } finally {
       connection.release();
     }
   }
 
-  static async getUserInfo(userId) {
-    const sql1 = `SELECT * FROM user WHERE user_id = ${userId}`;
-    const sql2 = `SELECT raid_record_id as raidRecordId, enter_time as enterTime, end_time as endTime FROM boss_raid WHERE user_id = ${userId}`;
+  static async getUserScore(userId) {
+    const sql = `SELECT * FROM user WHERE user_id = ${userId}`;
     let connection = await mysqlPool.getConnection(async (conn) => conn);
 
     try {
-      const [[result]] = await connection.query(sql1);
-      const [result2] = await connection.query(sql2);
-      const userInfoObj = {
-        "totalScore": result.score,
-        "bossRaidHistory": result2
-      }
-      return userInfoObj;
+      const [[result]] = await connection.query(sql);
+      // const userInfoObj = {
+      //   "totalScore": result.score,
+      //   "bossRaidHistory": result2
+      // }
+      return result.score;
     } catch (err) {
-      throw err;
+      console.log(err);
     } finally {
       connection.release();
     }
   }
+
+  static async getUserRecord(userId) {
+    const sql = `SELECT raid_record_id as raidRecordId, enter_time as enterTime, end_time as endTime FROM boss_raid WHERE user_id = ${userId}`;
+    let connection = await mysqlPool.getConnection(async (conn) => conn);
+
+    try {
+      const [result2] = await connection.query(sql);
+      return result2;
+    } catch (err) {
+      console.log(err);
+    } finally {
+      connection.release();
+    }
+  }
+
+
 }
 
 module.exports = UserService;
