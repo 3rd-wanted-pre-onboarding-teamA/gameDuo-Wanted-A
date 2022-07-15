@@ -7,6 +7,7 @@ module.exports = {
   STATIC_DATA_CACHE: "캐시에서 점수데이터를 가져옵니다.", 
   STATIC_DATA_SOURCE: "원격에서 점수데이터를 가져옵니다.", 
   DIFF_USERID: "아이디가 다르므로 접근 불가합니다.",
+  DIFF_RAIDRECORDID: "접속 아이디가 다르므로 접근 불가합니다.",
   TIMEOUT: "레이드 제한시간을 넘었으므로 레이드 실패입니다.", 
   GAME_START: "게임이 시작되었습니다.",
   GAME_END: "게임이 종료되었습니다.",

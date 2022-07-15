@@ -83,9 +83,14 @@ class BossRaidController {
       });
 
       // 1. 유효성 검사 - 예외 처리 (user)
-      if (user_id !== userId && raid_record_id !== raidRecordId) {
+      if (user_id !== userId) {
         return res.status(403).json({
           message: response.DIFF_USERID
+        });
+      }
+      if (raid_record_id !== raidRecordId) {
+        return res.status(403).json({
+          message: response.DIFF_RAIDRECORDID
         });
       }
       // 2. 유효성 검사 - 예외 처리 (레이드 제한시간 초과)
