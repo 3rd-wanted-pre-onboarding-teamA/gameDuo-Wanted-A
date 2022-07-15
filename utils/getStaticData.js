@@ -1,5 +1,6 @@
 const axios = require("axios");
 const BossRaidService = require("../services/bossRaid.service");
+const response = require("./response");
 
 const getStaticData = async () => {
     /**
@@ -9,15 +10,15 @@ const getStaticData = async () => {
   let value = await BossRaidService.levelCahceToRedis();
   let bossRaidLimitSeconds, levels;
   if (value) {
+    console.log(response.STATIC_DATA_CACHE);
     bossRaidLimitSeconds = JSON.parse(value).bossRaids[0].bossRaidLimitSeconds;
     levels = JSON.parse(value).bossRaids[0].levels;
-    console.log("from cached data");
   } else {
+    console.log(response.STATIC_DATA_SOURCE);
     const { data } = await axios.get(
       "https://dmpilf5svl7rv.cloudfront.net/assignment/backend/bossRaidData.json"
     );
     await BossRaidService.putStaticData(JSON.stringify(data));
-    console.log("from source data");
     bossRaidLimitSeconds = data.bossRaids[0].bossRaidLimitSeconds;
     levels = data.bossRaids[0].levels;
   }
