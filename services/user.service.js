@@ -27,10 +27,6 @@ class UserService {
 
     try {
       const [[result]] = await connection.query(sql);
-      // const userInfoObj = {
-      //   "totalScore": result.score,
-      //   "bossRaidHistory": result2
-      // }
       return result.score;
     } catch (err) {
       console.log(err);
