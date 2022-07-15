@@ -124,9 +124,7 @@ class BossRaidController {
           },
         });
       } else {
-        res.status(404).json({
-          message: "이미 게임이 종료되었습니다."
-        })
+        res.status(400).json(response.BAD_REQUEST);
       }
     } catch (err) {
       res.status(500).json(response.INTERNAL_SERVER_ERROR);
