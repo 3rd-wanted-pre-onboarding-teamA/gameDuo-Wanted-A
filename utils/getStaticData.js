@@ -7,7 +7,7 @@ const getStaticData = async () => {
    * 기능: staticData 레디스에 저장
    * 작성자: 이승연
    */
-  let value = await BossRaidService.levelCahceToRedis();
+  let value = await BossRaidService.levelCacheToRedis();
   let bossRaidLimitSeconds, levels;
   if (value) {
     console.log(response.STATIC_DATA_CACHE);
