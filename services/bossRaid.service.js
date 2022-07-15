@@ -10,14 +10,24 @@ class BossRaidService {
      * 작성자: 장덕수
      */
     const client = redis.createClient(redisPool);
+    let connection = null;
     try {
       await client.connect();
       const status = await client.get("raidStatus");
-      return parseInt(status, 10);
+      const sql = `SELECT user_id FROM boss_raid WHERE raid_record_id=${status};`
+      connection = await mysqlPool.getConnection(async (conn) => conn);
+      if (status) {
+        const userId = await connection.query(sql);
+        return parseInt(userId[0][0].user_id, 10);
+      }
+      else return null;
     } catch (err) {
       res.status(500).json(response.INTERNAL_SERVER_ERROR);
     } finally {
       await client.disconnect();
+      if (connection) {
+        connection.release();
+      }
     }
   };
 
