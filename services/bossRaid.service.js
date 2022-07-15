@@ -42,15 +42,16 @@ class BossRaidService {
     }
   }
 
-  static async putRaidRecordId(raidRecordId) {
+  static async putRaidRecordId(raidRecordId, bossRaidLimitSeconds) {
     /**
      * 기능: 게임 시작 가능시 raidStatus에 raidRecordId 넣기
-     * 작성자: 이승연
+     * 작성자: 이승연 장덕수
      */
     const client = redis.createClient(redisPool);
     try {
-      await client.connect();
-      await client.set("raidStatus", raidRecordId);
+        await client.connect();
+        await client.set("raidStatus", raidRecordId);
+        await client.expire("raidStatus", bossRaidLimitSeconds);  // 레이드 제한시간 지나면 raidStatus 삭제
     } catch {
       res.status(500).json(response.INTERNAL_SERVER_ERROR);
     } finally {
@@ -112,7 +113,7 @@ class BossRaidService {
      * 기능: 게임 끝난 후 점수 합산을 위한 boss_raid_level 찾기 (boss_raid table)
      * 작성자: 이승연
      */
-    const sql = `SELECT user_id, boss_raid_level, enter_time FROM boss_raid WHERE raid_record_id=${raidRecordId}`;
+    const sql = `SELECT user_id, boss_raid_level, enter_time, end_time FROM boss_raid WHERE raid_record_id=${raidRecordId}`;
     let connection = null;
     try {
       connection = await mysqlPool.getConnection(async (conn) => conn);
