@@ -22,7 +22,7 @@ class BossRaidService {
       }
       else return null;
     } catch (err) {
-      res.status(500).json(response.INTERNAL_SERVER_ERROR);
+      console.log(err);
     } finally {
       await client.disconnect();
       if (connection) {
@@ -43,7 +43,7 @@ class BossRaidService {
       connection = await mysqlPool.getConnection(async (conn) => conn);
       return await connection.query(sql, values);
     } catch (err) {
-      res.status(500).json(response.INTERNAL_SERVER_ERROR);
+      console.log(err);
       throw err;
     } finally {
       if (connection) {
@@ -63,7 +63,7 @@ class BossRaidService {
         await client.set("raidStatus", raidRecordId);
         await client.expire("raidStatus", bossRaidLimitSeconds);  // 레이드 제한시간 지나면 raidStatus 삭제
     } catch {
-      res.status(500).json(response.INTERNAL_SERVER_ERROR);
+      console.log(err);
     } finally {
       await client.disconnect();
     }
@@ -80,7 +80,7 @@ class BossRaidService {
       let staticData = await client.get("bossRaidData");
       return staticData;
     } catch (err) {
-      res.status(500).json(response.INTERNAL_SERVER_ERROR);
+      console.log(err);
     } finally {
       await client.disconnect();
     }
@@ -96,7 +96,7 @@ class BossRaidService {
       await client.connect();
       await client.set("bossRaidData", data);
     } catch (err) {
-      res.status(500).json(response.INTERNAL_SERVER_ERROR);
+      console.log(err);
     } finally {
       await client.disconnect();
     }
@@ -112,7 +112,7 @@ class BossRaidService {
       await client.connect();
       await client.del("raidStatus");
     } catch (err) {
-      res.status(500).json(response.INTERNAL_SERVER_ERROR);
+      console.log(err);
     } finally {
       await client.disconnect();
     }
@@ -129,7 +129,7 @@ class BossRaidService {
       connection = await mysqlPool.getConnection(async (conn) => conn);
       return await connection.query(sql);
     } catch (err) {
-      res.status(500).json(response.INTERNAL_SERVER_ERROR);
+      console.log(err);
     } finally {
       if (connection) {
         connection.release();
@@ -148,7 +148,7 @@ class BossRaidService {
       connection = await mysqlPool.getConnection(async (conn) => conn);
       return await connection.query(sql);
     } catch (err) {
-      res.status(500).json(response.INTERNAL_SERVER_ERROR);
+      console.log(err);
     } finally {
       if (connection) {
         connection.release();
@@ -167,7 +167,7 @@ class BossRaidService {
       connection = await mysqlPool.getConnection(async (conn) => conn);
       return await connection.query(sql);
     } catch (err) {
-      res.status(500).json(response.INTERNAL_SERVER_ERROR);
+      console.log(err);
     } finally {
       if (connection) {
         connection.release();
@@ -186,7 +186,7 @@ class BossRaidService {
       connection = await mysqlPool.getConnection(async (conn) => conn);
       return await connection.query(sql);
     } catch (err) {
-      res.status(500).json(response.INTERNAL_SERVER_ERROR);
+      console.log(err);
     } finally {
       if (connection) {
         connection.release();
@@ -205,7 +205,7 @@ class BossRaidService {
       connection = await mysqlPool.getConnection(async (conn) => conn);
       return await connection.query(sql);
     } catch (err) {
-      res.status(500).json(response.INTERNAL_SERVER_ERROR);
+      console.log(err);
     } finally {
       if (connection) {
         connection.release();
@@ -224,7 +224,7 @@ class BossRaidService {
       await client.connect();
       return await client.get("topRankerInfoList");
     } catch (err) {
-      res.status(500).json(response.INTERNAL_SERVER_ERROR);
+      console.log(err);
     } finally {
       await client.disconnect();
     }
@@ -241,7 +241,7 @@ class BossRaidService {
       connection = await mysqlPool.getConnection(async (conn) => conn);
       return await connection.query(sql);
     } catch (err) {
-      res.status(500).json(response.INTERNAL_SERVER_ERROR);
+      console.log(err);
     } finally {
       if (connection) {
         connection.release();
@@ -260,7 +260,7 @@ class BossRaidService {
       connection = await mysqlPool.getConnection(async (conn) => conn);
       return await connection.query(sql);
     } catch (err) {
-      res.status(500).json(response.INTERNAL_SERVER_ERROR);
+      console.log(err);
     } finally {
       if (connection) {
         connection.release();
@@ -279,7 +279,7 @@ class BossRaidService {
       await client.connect();
       await client.set("topRankerInfoList", JSON.stringify(rankingInfoData));
     } catch (err) {
-      res.status(500).json(response.INTERNAL_SERVER_ERROR);
+      console.log(err);
     } finally {
       await client.disconnect();
     }

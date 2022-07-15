@@ -21,6 +21,7 @@ class BossRaidController {
         });
       }
     } catch (err) {
+      console.log(err);
       res.status(500).json(response.INTERNAL_SERVER_ERROR);
     }
   };
@@ -52,6 +53,7 @@ class BossRaidController {
         });
       }
     } catch (err) {
+      console.log(err);
       res.status(500).json(response.INTERNAL_SERVER_ERROR);
     }
   }
@@ -63,11 +65,11 @@ class BossRaidController {
      */
     let singleScore; // 게임 종료 후 총점에 합산할 점수
     const { userId, raidRecordId } = req.body;
-    const [totalScore] = await BossRaidService.findTotalScore(userId);
-    let { score } = totalScore[0];
-    const [data] = await BossRaidService.findLevel(raidRecordId);
-    const { user_id, boss_raid_level, enter_time, end_time } = data[0];
     try { // 게임 레벨 별 점수 관련 static data 💽 Redis에 캐싱하여 사용하기
+      const [totalScore] = await BossRaidService.findTotalScore(userId);
+      let { score } = totalScore[0];
+      const [data] = await BossRaidService.findLevel(raidRecordId);
+      const { user_id, boss_raid_level, enter_time, end_time } = data[0];
       const bossRaidLimitSeconds = (await getStaticData()).bossRaidLimitSeconds;
       const levels = (await getStaticData()).levels;
 
@@ -124,9 +126,11 @@ class BossRaidController {
           },
         });
       } else {
+        console.log(err);
         res.status(400).json(response.BAD_REQUEST);
       }
     } catch (err) {
+      console.log(err);
       res.status(500).json(response.INTERNAL_SERVER_ERROR);
     }
   }
@@ -152,6 +156,7 @@ class BossRaidController {
         myRankingInfo: myRankingInfoData[0],
       });
     } catch (err) {
+      console.log(err);
       res.status(500).json(response.INTERNAL_SERVER_ERROR);
     }
   };
@@ -167,7 +172,7 @@ class BossRaidController {
       await BossRaidService.setTopRankerToCache(rankingInfoData[0]);
       console.log(response.RANKING_RESET);
     } catch (err) {
-      console.error(err);
+      console.log(err);
       res.status(500).json(response.INTERNAL_SERVER_ERROR);
     }
   };
