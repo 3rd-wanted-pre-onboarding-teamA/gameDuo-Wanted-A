@@ -55,10 +55,28 @@
 
 <span>1) RDBMS</span><br/>
 > MySQL
-- erd exmaple
-```
-- 추후 추가 예정
-```
+
+### Table
+- 유저 테이블
+- 테이블명: user
+  
+| Column | DataType | Key | Null | 비고 |
+| --- | --- | --- | --- | --- |
+| user_id | INT | PK | Not Null | auto increment  |
+| score | INT |  | Not Null | default 0 |
+
+- 보스레이드 테이블
+- 테이블명: boss_raid
+  
+| Column | DataType | Key | Null | 비고 |
+| --- | --- | --- | --- | --- |
+| raidRecordId | INT | PK | Not Null | auto increment  |
+| user_id | INT | FK | Not Null |  |
+| enter_time | DATATIME |  | Not Null | detault now() |
+| end_time | DATATIME |  |  |  |
+| boss_raid_level | INT |  | Not Null |  |
+| success | BOOLEAN |  | Not Null | default false |
+
 
 <span>2) Caching</span><br/>
 > Redis
