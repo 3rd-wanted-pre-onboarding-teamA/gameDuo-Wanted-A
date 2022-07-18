@@ -3,7 +3,7 @@ const express = require("express");
 const cors = require("cors");
 const router = require("./routes/index.js");
 const app = express();
-const BossRaidController = require("./controllers/bossRaid.controller");
+const topRankerToCache = require("./utils/topRankerToCache");
 const dotenv = require("dotenv");
 dotenv.config();
 
@@ -34,4 +34,4 @@ app.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
 });
 
-BossRaidController.topRankerToCache();
+topRankerToCache();
