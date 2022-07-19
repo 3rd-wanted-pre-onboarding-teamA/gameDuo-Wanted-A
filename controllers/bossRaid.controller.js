@@ -107,32 +107,32 @@ class BossRaidController {
       }
 
       // 기존에 end_time값이 있다면 게임 종료를 처리한 데이터이기 때문에 중복되지 않게 처리
-      if (!end_time) {        
-        // 보스레이드 종료 시 종료 시간, 총점 업데이트
-        const endBossRaid = BossRaidService.endBossRaid(raidRecordId, endTimeFormat, userId, score);
-        if (endBossRaid) {  // 보스레이드 종료가 정상적으로 완료되었을 때
-          // raidStatus 삭제
-          await BossRaidService.delRedisStatus();
-          // 랭킹 업데이트
-          await topRankerToCache();
-          
-          res.status(200).json({
-            message: response.GAME_END,
-            bossRaidEndData: {
-              userId,
-              raidRecordId,
-              bossRaidLevel: boss_raid_level,
-              totalScore: score,
-              singleScore,
-            }
-          });
-        } else {
-          res.status(500).json(response.INTERNAL_SERVER_ERROR);
-        }
-      } else {
+      if (end_time) {
         console.log(err);
         res.status(400).json(response.BAD_REQUEST);
       }
+
+      // 보스레이드 종료 시 종료 시간, 총점 업데이트
+      const endBossRaid = BossRaidService.endBossRaid(raidRecordId, endTimeFormat, userId, score);
+      if (!endBossRaid) {  // 보스레이드 종료가 정상적으로 완료되지 않았을 때 서버에러 반환
+        res.status(500).json(response.INTERNAL_SERVER_ERROR);
+      }
+
+      // raidStatus 삭제
+      await BossRaidService.delRedisStatus();
+      // 랭킹 업데이트
+      await topRankerToCache();
+      
+      res.status(200).json({
+        message: response.GAME_END,
+        bossRaidEndData: {
+          userId,
+          raidRecordId,
+          bossRaidLevel: boss_raid_level,
+          totalScore: score,
+          singleScore,
+        }
+      });
     } catch (err) {
       console.log(err);
       res.status(500).json(response.INTERNAL_SERVER_ERROR);
