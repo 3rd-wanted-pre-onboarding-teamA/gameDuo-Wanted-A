@@ -53,14 +53,35 @@
 
 ## 🧚🏻 구현 기능
 
-<span>1) RDBMS</span><br/>
+### RDBMS
 > MySQL
-- erd exmaple
-```
-- 추후 추가 예정
-```
 
-<span>2) Caching</span><br/>
+#### Table
+- 유저 테이블
+- 테이블명: user
+  
+| Column | DataType | Key | Null | 비고 |
+| --- | --- | --- | --- | --- |
+| user_id | INT | PK | Not Null | auto increment  |
+| score | INT |  | Not Null | default 0 |
+
+<br/>
+
+- 보스레이드 테이블
+- 테이블명: boss_raid
+  
+| Column | DataType | Key | Null | 비고 |
+| --- | --- | --- | --- | --- |
+| raidRecordId | INT | PK | Not Null | auto increment  |
+| user_id | INT | FK | Not Null |  |
+| enter_time | DATATIME |  | Not Null | detault now() |
+| end_time | DATATIME |  |  |  |
+| boss_raid_level | INT |  | Not Null |  |
+| success | BOOLEAN |  | Not Null | default false |
+
+<br/>
+
+### Caching
 > Redis
 
 - 보스레이드 상태 확인
@@ -68,6 +89,8 @@
 key: raidStatus
 value: raidRecordId
 ```
+
+<br/>
 
 - staticData
 ```
@@ -96,6 +119,8 @@ value:
 }
 ```
 
+<br/>
+
 - 랭킹: Top 10 랭킹 저장 및 조회
 ```
 key: topRankerInfoList
@@ -114,8 +139,21 @@ value: [
 
 ## 🌴 TDD
 Jest로 테스트 코드 구현 example
+
+- 보스레이드 상태 조회 테스트
 ```
-- 추후 추가 예정
+  보스레이드 상태 조회
+    성공 시
+      √ 레이드를 진행하고 있는 유저가 있을 시 canEnter: 1, 참가 중인 유저 아이디를 반환한다. (4 ms)
+      √ 레이드를 진행하고 있는 유저가 없을 시 canEnter: 0을 반환한다.
+```
+
+<br/>
+
+- 보스레이드 랭킹 조회 테스트
+```
+  보스레이드 랭킹 조회
+    √ 보스레이드 랭킹 조회 성공 시 200 반환한다. (77 ms)
 ```
 
 <br/>

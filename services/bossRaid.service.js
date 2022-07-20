@@ -17,10 +17,9 @@ class BossRaidService {
       const query = sql.SELECT_USER_ID;
       connection = await mysqlPool.getConnection(async (conn) => conn);
       if (status) {
-        const userId = await connection.query(query,[status]);
+        const userId = await connection.query(query, [status]);
         return parseInt(userId[0][0].user_id, 10);
-      }
-      else return null;
+      } else return null;
     } catch (err) {
       console.log(err);
     } finally {
@@ -29,7 +28,7 @@ class BossRaidService {
         connection.release();
       }
     }
-  };
+  }
 
   static async createId(userId, level) {
     /**
@@ -59,9 +58,9 @@ class BossRaidService {
      */
     const client = redis.createClient(redisPool);
     try {
-        await client.connect();
-        await client.set("raidStatus", raidRecordId);
-        await client.expire("raidStatus", bossRaidLimitSeconds);  // 레이드 제한시간 지나면 raidStatus 삭제
+      await client.connect();
+      await client.set("raidStatus", raidRecordId);
+      await client.expire("raidStatus", bossRaidLimitSeconds); // 레이드 제한시간 지나면 raidStatus 삭제
     } catch {
       console.log(err);
     } finally {
@@ -171,37 +170,27 @@ class BossRaidService {
     }
   }
 
-  static async updateBossRaid(raidRecordId, endTime) {
+  static async endBossRaid(raidRecordId, endTime, userId, score) {
     /**
-     * 기능: 게임 끝난 후 게임 종료 시간 입력
-     * 작성자: 이승연
+     * 기능: 게임 종료 시 게임 종료 시간 및 총점 업데이트
+     * 작성자: 장덕수 이승연
      */
-    const query = sql.UPDATE_BOSS_RAID + raidRecordId;
     let connection = null;
+    const endTimeQuery = sql.UPDATE_BOSS_RAID + raidRecordId;
+    const scoreQuery = sql.UPDATE_TOTAL_SCORE + userId;
     try {
       connection = await mysqlPool.getConnection(async (conn) => conn);
-      return await connection.query(query, [endTime]);
-    } catch (err) {
-      console.log(err);
-    } finally {
-      if (connection) {
-        connection.release();
-      }
-    }
-  }
+      await connection.beginTransaction() // 트랜잭션 적용 시작
 
-  static async updateTotalScore(userId, score) {
-    /**
-     * 기능: 유저 테이블에 총점 업데이트
-     * 작성자: 이승연
-     */
-    const query = sql.UPDATE_TOTAL_SCORE + userId;
-    let connection = null;
-    try {
-      connection = await mysqlPool.getConnection(async (conn) => conn);
-      return await connection.query(query, [score]);
+      await connection.query(endTimeQuery, [endTime]);
+      await connection.query(scoreQuery, [score]);
+
+      await connection.commit() // 커밋
+      return true;
     } catch (err) {
       console.log(err);
+      await connection.rollback() // 롤백
+      return false;
     } finally {
       if (connection) {
         connection.release();
